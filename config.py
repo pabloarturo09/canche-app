@@ -10,4 +10,4 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    BASE_URL = "http://192.168.100.14:5000"
+    BASE_URL = "https://laposta-4neo.onrender.com"
