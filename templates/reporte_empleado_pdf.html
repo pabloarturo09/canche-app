@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reporte de asistencia - {{ empleado.nombre }}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 1.5cm;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+    }
+    h1, h2, h3, h4 {
+      margin: 0 0 5px 0;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #000;
+      padding-bottom: 5px;
+    }
+    .section {
+      margin-bottom: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 5px;
+    }
+    th, td {
+      border: 1px solid #000;
+      padding: 3px 4px;
+      text-align: left;
+    }
+    th {
+      background: #eee;
+    }
+    .fila-falta {
+      background: #fdd;
+    }
+    .small {
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Reporte de asistencia</h1>
+    <p class="small">Fecha de elaboración: {{ fecha_reporte.strftime("%d/%m/%Y") }}</p>
+  </div>
+
+  <div class="section">
+    <h3>Datos del empleado</h3>
+    <p><strong>Nombre:</strong> {{ empleado.nombre }}</p>
+    <p><strong>Puesto:</strong> {{ empleado.puesto or "—" }}</p>
+  </div>
+
+  <div class="section">
+    <h3>Resumen del periodo</h3>
+    <p><strong>Días laborados:</strong> {{ total_dias }}</p>
+    <p><strong>Faltas:</strong> {{ total_faltas }}</p>
+    <p><strong>Días con asistencia:</strong> {{ total_dias - total_faltas }}</p>
+  </div>
+
+  <div class="section">
+    <h3>Historial de asistencia</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th>Método</th>
+          <th>IP cliente</th>
+          <th>A/F</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in historial %}
+          <tr class="{% if r.estado == 'F' %}fila-falta{% endif %}">
+            <td>{{ r.fecha.strftime("%d/%m/%Y") }}</td>
+            <td>{% if r.hora %}{{ r.hora.strftime("%H:%M:%S") }}{% else %}—{% endif %}</td>
+            <td>{{ r.metodo or "—" }}</td>
+            <td>{{ r.ip_cliente or "—" }}</td>
+            <td>{{ r.estado }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h3>Alertas generadas</h3>
+    {% if alertas %}
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Regla</th>
+            <th>Nivel</th>
+            <th>Periodo</th>
+            <th>Detalles</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in alertas %}
+            <tr>
+              <td>{{ a.generado_en.strftime("%d/%m/%Y %H:%M") }}</td>
+              <td>{{ a.tipo }}</td>
+              <td>{{ a.regla.nombre if a.regla else "—" }}</td>
+              <td>{{ a.nivel }}</td>
+              <td>
+                {% if a.periodo_inicio and a.periodo_fin %}
+                  {{ a.periodo_inicio.strftime("%d/%m/%Y") }} –
+                  {{ a.periodo_fin.strftime("%d/%m/%Y") }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td class="small">
+                {{ a.descripcion or "" }}<br>
+                {% if a.valor_dias %}Días: {{ a.valor_dias }}. {% endif %}
+                {% if a.valor_faltas %}Faltas: {{ a.valor_faltas }}. {% endif %}
+                {% if a.valor_asistencias %}Asistencias: {{ a.valor_asistencias }}.{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="small">No se registran alertas para este empleado.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

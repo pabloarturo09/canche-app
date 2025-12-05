@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Asistencias - La Posta{% endblock %}
+
+{% block content %}
+<h2>Registro de Asistencias</h2>
+<hr>
+
+<table class="table table-striped">
+  <thead class="table-dark">
+    <tr>
+      <th>Empleado</th>
+      <th>Puesto</th>
+      <th>Fecha</th>
+      <th>Hora de registro</th>
+      <th>Método</th>
+      <th>IP cliente</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if grupos %}
+      {% for grupo in grupos %}
+        <!-- Fila separadora por día -->
+        <tr class="table-active">
+          <td colspan="7">
+            <strong>Fecha:</strong> {{ grupo.fecha.strftime('%Y-%m-%d') }}
+          </td>
+        </tr>
+
+        <!-- Filas de asistencias de ese día -->
+        {% for reg in grupo.registros %}
+          {% set asistencia = reg.asistencia %}
+          {% set empleado = reg.empleado %}
+          <tr>
+            <td>{{ empleado.nombre }}</td>
+            <td>{{ empleado.puesto or '—' }}</td>
+            <td>{{ asistencia.fecha.strftime('%Y-%m-%d') }}</td>
+            <td>{{ asistencia.hora.strftime('%H:%M:%S') }}</td>
+            <td>{{ asistencia.metodo }}</td>
+            <td>{{ asistencia.ip_cliente or '—' }}</td>
+            <td>
+              {% if asistencia.fecha == hoy %}
+                <span class="badge bg-success">Presente</span>
+              {% else %}
+                <span class="badge bg-secondary">Histórico</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      {% endfor %}
+    {% else %}
+      <tr>
+        <td colspan="7" class="text-center text-muted">
+          No hay asistencias registradas todavía.
+        </td>
+      </tr>
+    {% endif %}
+  </tbody>
+</table>
+
+<p class="text-secondary">*Los datos se generan automáticamente cuando el empleado registra su asistencia vía QR.</p>
+{% endblock %}

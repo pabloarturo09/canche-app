@@ -1,0 +1,192 @@
+{% extends "base.html" %} {% block title %}Empleados - La Posta{% endblock %} {%
+block content %}
+<h2>Gestión de Empleados</h2>
+<hr />
+
+<!-- 🧾 Formulario para registrar nuevo empleado -->
+<div class="card p-4 mb-4 shadow-sm">
+  <h4 class="mb-3">Registrar nuevo empleado</h4>
+  <form method="POST" action="{{ url_for('empleados') }}">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="nombre" class="form-label">Nombre completo</label>
+        <input
+          type="text"
+          id="nombre"
+          name="nombre"
+          class="form-control"
+          placeholder="Ej. Juan Pérez"
+          required
+        />
+      </div>
+
+      <!-- Campo usuario (solo visual/para futuro, el backend actual no lo usa) -->
+      <div class="col-md-3">
+        <label for="usuario" class="form-label">Usuario</label>
+        <input
+          type="text"
+          id="usuario"
+          name="usuario"
+          class="form-control"
+          placeholder="Ej. jperez"
+        />
+      </div>
+
+      <div class="col-md-3">
+        <label for="puesto" class="form-label">Puesto</label>
+        <input
+          type="text"
+          id="puesto"
+          name="puesto"
+          class="form-control"
+          placeholder="Ej. Cocinero"
+        />
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label for="password" class="form-label">Contraseña</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-control"
+          required
+        />
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+  </form>
+</div>
+
+<!-- 📋 Tabla de empleados -->
+<div class="card p-4 shadow-sm">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Empleados registrados</h4>
+
+    <div
+      class="btn-group btn-group-sm"
+      role="group"
+      aria-label="Filtro empleados"
+    >
+      <a
+        href="{{ url_for('empleados', estado='activos') }}"
+        class="btn {% if estado == 'activos' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+      >
+        Activos
+      </a>
+      <a
+        href="{{ url_for('empleados', estado='todos') }}"
+        class="btn {% if estado == 'todos' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+      >
+        Todos
+      </a>
+      <a
+        href="{{ url_for('empleados', estado='baja') }}"
+        class="btn {% if estado == 'baja' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+      >
+        Dados de baja
+      </a>
+    </div>
+  </div>
+
+  <table class="table table-striped align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Nombre completo</th>
+        <th>Usuario</th>
+        <th>Puesto</th>
+        <th>Fecha de registro</th>
+        <th>QR / Enlace</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for emp in empleados %}
+      <tr>
+        <td>{{ emp.id }}</td>
+        <td>{{ emp.nombre }}</td>
+        <!-- Por ahora mostramos el ID como usuario; puedes cambiarlo si luego agregas el campo en el modelo -->
+        <td>{{ emp.id }}</td>
+        <td>{{ emp.puesto or '-' }}</td>
+        <td>{{ emp.creado_at.strftime("%Y-%m-%d") }}</td>
+
+        <td>
+          {% if emp.qr_filename %}
+          <!-- Imagen del QR generado en /static/qr/ -->
+          <img
+            src="{{ url_for('static', filename='qr/' ~ emp.qr_filename) }}"
+            alt="QR empleado {{ emp.id }}"
+            width="80"
+            class="img-thumbnail mb-1"
+          />
+          <br />
+          <!-- Enlace directo a la página de asistencia que codifica el QR -->
+          <a
+            href="{{ url_for('asistencia_empleado_token', token=emp.token_acceso) }}"
+            target="_blank"
+            class="btn btn-sm btn-outline-secondary mt-1"
+          >
+            Abrir página de asistencia
+          </a>
+          {% else %} - {% endif %}
+        </td>
+
+        <!-- Estado -->
+        <td>
+          {% if emp.activo %}
+          <span class="badge bg-success">Activo</span>
+          {% else %}
+          <span class="badge bg-secondary">Inactivo</span>
+          {% endif %}
+        </td>
+
+        <!-- Acciones -->
+        <td class="d-flex gap-1">
+          {% if emp.activo %}
+          <!-- Dar de baja -->
+          <form
+            method="POST"
+            action="{{ url_for('baja_empleado', emp_id=emp.id, estado=estado) }}"
+            onsubmit="return confirm('¿Seguro que deseas dar de baja a este empleado?');"
+          >
+            <button class="btn btn-sm btn-danger">Dar de baja</button>
+          </form>
+          {% else %}
+          <!-- Reactivar -->
+          <form
+            method="POST"
+            action="{{ url_for('activar_empleado', emp_id=emp.id, estado=estado) }}"
+            onsubmit="return confirm('¿Reactivar a este empleado?');"
+          >
+            <button class="btn btn-sm btn-warning">Reactivar</button>
+          </form>
+          {% endif %}
+
+          <!-- Regenerar QR (siempre disponible) -->
+          <form
+            method="POST"
+            action="{{ url_for('regenerar_qr_empleado', emp_id=emp.id, estado=estado) }}"
+            onsubmit="return confirm('¿Regenerar el código QR para este empleado?');"
+          >
+            <button class="btn btn-sm btn-outline-primary">Regenerar QR</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <!-- ahora son 8 columnas -->
+        <td colspan="8" class="text-center text-muted">
+          No hay empleados registrados todavía.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

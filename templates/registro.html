@@ -1,0 +1,29 @@
+{% extends "base_publica.html" %}
+
+{% block title %}Registro de Asistencia{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-sm p-4">
+        <h2 class="mb-4 text-center">Registro de Asistencia</h2>
+        <hr>
+
+        <form method="POST">
+          <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre completo</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ej. Juan Pérez" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Registrar asistencia</button>
+        </form>
+
+        <p class="text-secondary mt-3 text-center">
+          Escanea este código solo una vez por día.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

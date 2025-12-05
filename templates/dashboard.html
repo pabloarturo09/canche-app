@@ -1,0 +1,71 @@
+{% extends "base.html" %} {% block title %}Dashboard - La Posta{% endblock %} {%
+block content %}
+<h2>Dashboard</h2>
+<hr />
+
+<div class="row">
+  <div class="col-md-4">
+    <div class="card text-bg-success mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Empleados presentes</h5>
+        <p class="card-text fs-3">{{ empleados_presentes }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card text-bg-danger mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Faltas del día</h5>
+        <p class="card-text fs-3">{{ faltas_dia }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card text-bg-warning mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Alertas generadas hoy</h5>
+        <p class="card-text fs-3">{{ alertas_hoy }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4 border-0 shadow-sm ia-card">
+  <div class="card-body d-flex align-items-center">
+    <div class="spinner-border me-3" role="status" aria-hidden="true"></div>
+    <div>
+      <div class="fw-bold">Motor de IA analizando patrones de asistencia…</div>
+      <small class="text-light-50">
+        Modelos dinámicos detectan ausencias, inventarios, días de descanso y
+        empleados en riesgo en tiempo real.
+      </small>
+    </div>
+  </div>
+</div>
+
+{% if insights_ia %}
+<div class="card mb-4 shadow-sm">
+  <div class="card-header">🧠 Análisis de asistencia por IA</div>
+  <div class="card-body">
+    <ul class="mb-0">
+      {% for insight in insights_ia %}
+      <li class="mb-2">
+        <strong>
+          {% if insight.tipo == 'riesgo' %}⚠️{% elif insight.tipo == 'positivo'
+          %}✅{% elif insight.tipo == 'resumen' %}📊{% elif insight.tipo ==
+          'descanso' %}🛌{% elif insight.tipo == 'inventario' %}📦{% elif
+          insight.tipo == 'hoy' %}⏱️{% elif insight.tipo == 'faltas' %}🚫{% elif
+          insight.tipo == 'sistema' %}💻{% endif %} {{ insight.titulo }}
+        </strong>
+        <br />
+        <small class="text-muted">{{ insight.detalle }}</small>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endif %} {% endblock %}
+
+

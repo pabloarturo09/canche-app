@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Reportes - La Posta{% endblock %}
+
+{% block content %}
+<h2>Reportes de asistencia</h2>
+<hr>
+
+<form method="get" action="{{ url_for('reportes.reportes') }}">
+  <div class="row g-2">
+    <div class="col-md-8">
+      <label class="form-label">Empleado</label>
+      <select name="empleado_id" class="form-select" required>
+        <option value="">-- Selecciona un empleado --</option>
+        {% for e in empleados %}
+          <option value="{{ e.id }}"
+                  {% if empleado and empleado.id == e.id %}selected{% endif %}>
+            {{ e.nombre }} {% if e.puesto %} ({{ e.puesto }}){% endif %}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+      <button class="btn btn-primary w-100">Ver historial</button>
+    </div>
+  </div>
+</form>
+
+{% if empleado %}
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4 class="card-title mb-3">Datos del empleado</h4>
+      <p class="mb-1"><strong>Nombre:</strong> {{ empleado.nombre }}</p>
+      <p class="mb-1"><strong>Puesto:</strong> {{ empleado.puesto or "—" }}</p>
+      <p class="mb-1">
+        <strong>Fecha de reporte:</strong> {{ fecha_reporte.strftime("%d/%m/%Y") }}
+      </p>
+
+      <hr>
+
+      <p class="mb-1"><strong>Días laborados (periodo):</strong> {{ total_dias }}</p>
+      <p class="mb-1"><strong>Faltas totales:</strong> {{ total_faltas }}</p>
+      <p class="mb-0">
+        <strong>Días con asistencia:</strong> {{ total_dias - total_faltas }}
+      </p>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h4>Historial de asistencia</h4>
+<a href="{{ url_for('reportes.reporte_empleado_pdf', empleado_id=empleado.id) }}">
+       class="btn btn-success" target="_blank">
+      Descargar PDF
+    </a>
+  </div>
+
+  <div class="table-responsive mb-4">
+    <table class="table table-sm table-striped align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th>Método</th>
+          <th>IP cliente</th>
+          <th>A/F</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in historial %}
+          <tr class="{% if r.estado == 'F' %}table-danger{% endif %}">
+            <td>{{ r.fecha.strftime("%d/%m/%Y") }}</td>
+            <td>
+              {% if r.hora %}{{ r.hora.strftime("%H:%M:%S") }}{% else %}—{% endif %}
+            </td>
+            <td>{{ r.metodo or "—" }}</td>
+            <td>{{ r.ip_cliente or "—" }}</td>
+            <td>
+              {% if r.estado == 'A' %}
+                <span class="badge bg-success">A</span>
+              {% else %}
+                <span class="badge bg-danger">F</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Alertas del empleado</h4>
+
+  {% if alertas %}
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Generada en</th>
+            <th>Tipo</th>
+            <th>Regla</th>
+            <th>Nivel</th>
+            <th>Periodo</th>
+            <th>Detalles</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in alertas %}
+            <tr>
+              <td>{{ a.generado_en.strftime("%d/%m/%Y %H:%M") }}</td>
+              <td>{{ a.tipo }}</td>
+              <td>{{ a.regla.nombre if a.regla else "—" }}</td>
+              <td>{{ a.nivel }}</td>
+              <td>
+                {% if a.periodo_inicio and a.periodo_fin %}
+                  {{ a.periodo_inicio.strftime("%d/%m/%Y") }} –
+                  {{ a.periodo_fin.strftime("%d/%m/%Y") }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>
+                <small>
+                  {{ a.descripcion or "" }}<br>
+                  {% if a.valor_dias %}
+                    Días: {{ a.valor_dias }}.
+                  {% endif %}
+                  {% if a.valor_faltas %}
+                    Faltas: {{ a.valor_faltas }}.
+                  {% endif %}
+                  {% if a.valor_asistencias %}
+                    Asistencias: {{ a.valor_asistencias }}.
+                  {% endif %}
+                </small>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted">No hay alertas generadas para este empleado.</p>
+  {% endif %}
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% block title %}Sistema de Asistencia - La Posta{% endblock %}
+    </title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/estilos.css') }}"
+    />
+  </head>
+  <body>
+    <div class="d-flex" id="wrapper">
+      <!-- Sidebar -->
+      <div class="bg-dark text-white p-3" id="sidebar">
+        <div class="text-center mb-3">
+          <img
+            src="{{ url_for('static', filename='img/logo.jpeg') }}"
+            alt="Logo La Posta"
+            class="img-fluid"
+            style="max-width: 120px; border-radius: 8px"
+          />
+        </div>
+
+        <h3 class="text-center">La Posta</h3>
+        <p class="text-center small mb-1">
+          {% if session.admin_usuario %}👤 {{ session.admin_usuario }}{% endif
+          %}
+        </p>
+        <hr class="text-secondary" />
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a href="{{ url_for('dashboard') }}" class="nav-link text-white"
+              >🏠 Dashboard</a
+            >
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('asistencias') }}" class="nav-link text-white"
+              >🕓 Asistencias</a
+            >
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('empleados') }}" class="nav-link text-white"
+              >🧑‍💼 Empleados</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              href="{{ url_for('alertas') }}"
+              class="nav-link text-white d-flex justify-content-between align-items-center"
+            >
+              <span>⚠️ Notificaciones</span>
+              {% if alertas_no_leidas and alertas_no_leidas > 0 %}
+              <span class="badge bg-danger rounded-pill"
+                >{{ alertas_no_leidas }}</span
+              >
+              {% endif %}
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a
+              href="{{ url_for('reportes.reportes') }}"
+              class="nav-link text-white"
+              >📊 Reportes</a
+            >
+          </li>
+
+          <li class="nav-item">
+            <a href="{{ url_for('configuracion') }}" class="nav-link text-white"
+              >⚙️ Configuración</a
+            >
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('logout') }}" class="nav-link text-white"
+              >🚪 Cerrar sesión</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <!-- Contenido principal -->
+      <div id="page-content" class="flex-grow-1 p-4">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

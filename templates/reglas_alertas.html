@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Configuración de alertas - La Posta{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="mb-0">Configuración de reglas de alerta</h2>
+    <small class="text-muted">Ajusta los umbrales que disparan las notificaciones inteligentes.</small>
+  </div>
+  <a href="{{ url_for('alertas') }}" class="btn btn-outline-secondary">
+    ⬅ Volver a alertas
+  </a>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>Nombre</th>
+        <th>Tipo</th>
+        <th>Umbral de días</th>
+        <th>Umbral de faltas</th>
+        <th>Nivel</th>
+        <th>Activo</th>
+        <th>Descripción</th>
+        <th>Guardar</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in reglas %}
+        <tr>
+          <form method="post">
+            <input type="hidden" name="id" value="{{ r.id }}">
+            <td>
+              <strong>{{ r.nombre }}</strong><br>
+              <small class="text-muted">ID: {{ r.id }}</small>
+            </td>
+            <td>
+              <span class="badge bg-secondary">{{ r.tipo }}</span>
+            </td>
+            <td style="max-width: 90px;">
+              <input
+                type="number"
+                name="umbral_dias"
+                class="form-control form-control-sm"
+                value="{{ r.umbral_dias or '' }}"
+                min="0"
+              />
+            </td>
+            <td style="max-width: 90px;">
+              <input
+                type="number"
+                name="umbral_faltas"
+                class="form-control form-control-sm"
+                value="{{ r.umbral_faltas or '' }}"
+                min="0"
+              />
+            </td>
+            <td>
+              <select name="nivel" class="form-select form-select-sm">
+                {% set niveles = ['info', 'warning', 'critico'] %}
+                {% for n in niveles %}
+                  <option value="{{ n }}" {% if r.nivel == n %}selected{% endif %}>
+                    {{ n }}
+                  </option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>
+              <div class="form-check form-switch">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  name="activo"
+                  value="1"
+                  id="activo_{{ r.id }}"
+                  {% if r.activo %}checked{% endif %}
+                />
+                <label class="form-check-label" for="activo_{{ r.id }}">
+                  {% if r.activo %}Sí{% else %}No{% endif %}
+                </label>
+              </div>
+            </td>
+            <td style="max-width: 240px;">
+              <small class="text-muted">{{ r.descripcion or '—' }}</small>
+            </td>
+            <td>
+              <button type="submit" class="btn btn-sm btn-primary">
+                💾 Guardar
+              </button>
+            </td>
+          </form>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

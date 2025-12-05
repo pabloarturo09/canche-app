@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Alertas - La Posta{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="mb-0">Alertas del sistema</h2>
+    <small class="text-muted">Detección automática de patrones de asistencia</small>
+  </div>
+  <a href="{{ url_for('reglas_alertas') }}" class="btn btn-outline-primary">
+    ⚙️ Configurar reglas de alerta
+  </a>
+</div>
+
+<!-- Filtros -->
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-3">
+    <label class="form-label mb-0">Tipo</label>
+    <select name="tipo" class="form-select form-select-sm">
+      <option value="">Todos</option>
+      {% for t in tipos %}
+        <option value="{{ t }}" {% if t == tipo_seleccionado %}selected{% endif %}>
+          {{ t }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-md-3">
+    <label class="form-label mb-0">Nivel</label>
+    <select name="nivel" class="form-select form-select-sm">
+      <option value="">Todos</option>
+      {% for n in niveles %}
+        <option value="{{ n }}" {% if n == nivel_seleccionado %}selected{% endif %}>
+          {{ n }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-md-3">
+    <label class="form-label mb-0">Estado</label>
+    <select name="estado" class="form-select form-select-sm">
+      <option value="todas" {% if estado_seleccionado == "todas" %}selected{% endif %}>Todas</option>
+      <option value="no_leidas" {% if estado_seleccionado == "no_leidas" %}selected{% endif %}>No leídas</option>
+      <option value="leidas" {% if estado_seleccionado == "leidas" %}selected{% endif %}>Leídas</option>
+    </select>
+  </div>
+
+  <div class="col-md-3 d-flex align-items-end">
+    <button type="submit" class="btn btn-primary w-100 btn-sm">Aplicar filtros</button>
+  </div>
+</form>
+
+{% if alertas|length == 0 %}
+  <div class="alert alert-success">
+    🎉 No hay alertas registradas con los filtros actuales.
+  </div>
+{% else %}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Estado</th>
+          <th>Alerta</th>
+          <th>Empleado</th>
+          <th>Periodo / Contexto</th>
+          <th>Valores</th>
+          <th>Nivel</th>
+          <th>Generado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in alertas %}
+          <tr class="{% if not a.leido %}table-warning{% endif %}">
+            <td>
+              {% if a.leido %}
+                <span class="badge bg-secondary">Leída</span>
+              {% else %}
+                <span class="badge bg-danger">Nueva</span>
+              {% endif %}
+            </td>
+            <td>
+              <strong>{{ a.tipo or 'Alerta' }}</strong><br />
+              <small class="text-muted">
+                {{ a.descripcion or 'Sin descripción detallada.' }}
+              </small>
+            </td>
+            <td>
+              {% if a.empleado %}
+                <strong>{{ a.empleado.nombre }}</strong><br />
+                <small class="text-muted">{{ a.empleado.puesto or '—' }}</small>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if a.periodo_inicio or a.periodo_fin %}
+                <small>
+                  {{ a.periodo_inicio or '¿?' }} – {{ a.periodo_fin or '¿?' }}
+                </small>
+              {% else %}
+                <span class="text-muted">No especificado</span>
+              {% endif %}
+            </td>
+            <td>
+              <small>
+                {% if a.valor_dias is not none %}
+                  Días: <strong>{{ a.valor_dias }}</strong><br />
+                {% endif %}
+                {% if a.valor_faltas is not none %}
+                  Faltas: <strong>{{ a.valor_faltas }}</strong><br />
+                {% endif %}
+                {% if a.valor_asistencias is not none %}
+                  Asistencias: <strong>{{ a.valor_asistencias }}</strong>
+                {% endif %}
+                {% if a.valor_dias is none and a.valor_faltas is none and a.valor_asistencias is none %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </small>
+            </td>
+            <td>
+              {% if a.nivel == 'critico' %}
+                <span class="badge bg-danger text-uppercase">{{ a.nivel }}</span>
+              {% elif a.nivel == 'warning' %}
+                <span class="badge bg-warning text-dark text-uppercase">{{ a.nivel }}</span>
+              {% else %}
+                <span class="badge bg-info text-uppercase">{{ a.nivel or 'info' }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <small>{{ a.generado_en.strftime('%Y-%m-%d %H:%M') }}</small>
+            </td>
+            <td>
+              <form method="post" action="{{ url_for('toggle_alerta_leido', alerta_id=a.id) }}">
+                <button type="submit" class="btn btn-sm {% if a.leido %}btn-outline-secondary{% else %}btn-outline-success{% endif %}">
+                  {% if a.leido %}Marcar como no leída{% else %}Marcar como leída{% endif %}
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+{% endblock %}
